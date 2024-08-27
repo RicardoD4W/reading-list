@@ -1,20 +1,52 @@
-import { LitElement, html } from 'lit'
+import { LitElement, css, html } from 'lit'
 import type { Book, Library } from './types/Book'
 import { Task } from '@lit/task'
 import './components/library-collection/library-collection.view'
 import './components/book-header/book-header.view'
+import './components/fav-library-collection/fav-library-collection.view'
 import { FilterNumPageEvent } from './components/book-header/events/filter-numpage.event'
 import { FilterGengeEvent } from './components/book-header/events/filter-genre.event'
 import { state } from 'lit/decorators.js'
+import { AddFavListEvent } from './components/library-collection/events/add-fav-list.event'
 
 export class MyApp extends LitElement {
   @state() private _booksTask!: Task<Book[]>
+  @state() private _favBooks: Book[] = []
   private _minPages!: number
   private _maxPages!: number
   private _allGenres!: string[]
   private _originalLibrary: Book[] = []
   private _selectedGenre: string = 'Todos'
   private _minPagesFilter: number = 0
+
+  static styles = css`
+    .main-content {
+      display: flex;
+      justify-content: center;
+      flex-direction: row;
+    }
+
+    .main-content library-collection {
+      width: 50%;
+    }
+    .main-content fav-library-collection {
+      width: 50%;
+    }
+
+    @media (max-width: 1250px) {
+      .main-content {
+        flex-direction: column;
+        justify-content: center;
+        gap: 50px;
+      }
+      .main-content library-collection {
+        width: 100%;
+      }
+      .main-content fav-library-collection {
+        width: 100%;
+      }
+    }
+  `
 
   render() {
     return html`
@@ -33,8 +65,14 @@ export class MyApp extends LitElement {
             ></book-header>
           </header>
 
-          <main>
+          <main
+            class="main-content"
+            @add:fav-list=${(e: AddFavListEvent) => this._addBookToFavList(e)}
+          >
             <library-collection .library=${library}></library-collection>
+            <fav-library-collection
+              .library=${this._favBooks}
+            ></fav-library-collection>
           </main>
         `,
         error: (e) => html`Error: ${e}`,
@@ -60,6 +98,34 @@ export class MyApp extends LitElement {
       },
       args: () => [],
     })
+  }
+
+  private _addBookToFavList(e: AddFavListEvent) {
+    const { book } = e.detail
+    const { from } = e.detail
+
+    let collection = this._booksTask.value as Library
+
+    if (from === 'FAV') {
+      this._favBooks = [
+        ...this._favBooks.filter((b) => b.book.ISBN !== book.ISBN),
+      ]
+      collection.library = [...collection.library, { book }]
+    }
+
+    if (from === 'COMMON') {
+      collection.library = [
+        ...collection.library.filter((b) => b.book.ISBN !== book.ISBN),
+      ]
+      this._favBooks = [...this._favBooks, { book }]
+    }
+
+    this._saveState()
+    this.requestUpdate()
+  }
+
+  private _saveState() {
+    console.log(this._booksTask, this._favBooks)
   }
 
   private _getPages(library: Book[]) {

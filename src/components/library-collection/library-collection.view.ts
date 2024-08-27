@@ -14,7 +14,10 @@ export class LibraryCollectionView extends LibraryCollectionViewModel {
     return html` ${repeat(
       this.library,
       ({ book }) => book.ISBN,
-      ({ book }) => html`<img class="book" src=${book.cover} />`
+      ({ book }) =>
+        html`<div @click=${() => this.handleClickBook(book)}>
+          <img class="book" src=${book.cover} />
+        </div>`
     )}`
   }
 }
