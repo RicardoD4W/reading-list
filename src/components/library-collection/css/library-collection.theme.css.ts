@@ -7,10 +7,22 @@ export class LibraryCollectionTheme {
       flex-wrap: wrap;
       justify-content: center;
       gap: 15px;
+      text-align: center;
     }
 
     div {
       position: relative;
+    }
+
+    summary {
+      padding: 20px;
+    }
+
+    section.gallery {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
     }
 
     div .book {
@@ -21,8 +33,19 @@ export class LibraryCollectionTheme {
       transition: opacity 0.25s ease;
     }
 
-    div::before {
+    div.COMMON::before {
       content: '+';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: rgba(255, 255, 255, 0);
+      font-size: 3rem;
+      transition: color 0.25s ease;
+      pointer-events: none;
+    }
+    div.FAV::before {
+      content: '-';
       position: absolute;
       top: 50%;
       left: 50%;

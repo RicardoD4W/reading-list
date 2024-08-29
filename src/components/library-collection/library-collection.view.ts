@@ -11,14 +11,27 @@ export class LibraryCollectionView extends LibraryCollectionViewModel {
   }
 
   public render(): TemplateResult {
-    return html` ${repeat(
-      this.library,
-      ({ book }) => book.ISBN,
-      ({ book }) =>
-        html`<div @click=${() => this.handleClickBook(book)}>
-          <img class="book" src=${book.cover} />
-        </div>`
-    )}`
+    return html` <details open>
+      <summary>
+        ${this.webComponentId === 'COMMON'
+          ? 'Desplegar disponibles'
+          : 'Desplegar destacados'}
+      </summary>
+
+      <section class="gallery">
+        ${repeat(
+          this.library,
+          ({ book }) => book.ISBN,
+          ({ book }) =>
+            html`<div
+              class=${this.webComponentId}
+              @click=${() => this.handleClickBook(book)}
+            >
+              <img class="book" src=${book.cover} />
+            </div>`
+        )}
+      </section>
+    </details>`
   }
 }
 

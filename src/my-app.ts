@@ -83,21 +83,39 @@ export class MyApp extends LitElement {
   connectedCallback() {
     super.connectedCallback()
 
-    this._booksTask = new Task(this, {
-      task: async () => {
-        const res = await fetch(`/data/books.json`)
-        if (!res.ok) {
-          throw new Error(res.status.toString())
-        }
-        const response = (await res.json()) as Library
-        this._originalLibrary = response.library
-        this._getPages(response.library)
-        this._getGenres(response.library)
+    if (localStorage.getItem('fav-library')) {
+      this._favBooks = JSON.parse(localStorage.getItem('fav-library') ?? '[]')
+    }
 
-        return response
-      },
-      args: () => [],
-    })
+    if (localStorage.getItem('library')) {
+      this._booksTask = new Task(this, {
+        task: async () => {
+          const res = JSON.parse(localStorage.getItem('library') ?? '[]')
+          this._originalLibrary = res.library
+          this._getPages(res.library)
+          this._getGenres(res.library)
+
+          return res
+        },
+        args: () => [],
+      })
+    } else {
+      this._booksTask = new Task(this, {
+        task: async () => {
+          const res = await fetch(`/data/books.json`)
+          if (!res.ok) {
+            throw new Error(res.status.toString())
+          }
+          const response = (await res.json()) as Library
+          this._originalLibrary = response.library
+          this._getPages(response.library)
+          this._getGenres(response.library)
+
+          return response
+        },
+        args: () => [],
+      })
+    }
   }
 
   private _addBookToFavList(e: AddFavListEvent) {
@@ -125,7 +143,8 @@ export class MyApp extends LitElement {
   }
 
   private _saveState() {
-    console.log(this._booksTask, this._favBooks)
+    localStorage.setItem('library', JSON.stringify(this._booksTask.value))
+    localStorage.setItem('fav-library', JSON.stringify(this._favBooks))
   }
 
   private _getPages(library: Book[]) {
